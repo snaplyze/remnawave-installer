@@ -3510,9 +3510,9 @@ make_api_request() {
     )
 
     if [ -n "$data" ]; then
-        curl -s -X "$method" "$url" "${headers[@]}" -d "$data"
+        curl -sS -X "$method" "$url" "${headers[@]}" -d "$data"
     else
-        curl -s -X "$method" "$url" "${headers[@]}"
+        curl -sS -X "$method" "$url" "${headers[@]}"
     fi
 }
 
@@ -3621,11 +3621,13 @@ get_public_key() {
 
     if [ -z "$api_response" ]; then
         echo -e "${COLOR_RED}${LANG[ERROR_PUBLIC_KEY]}${COLOR_RESET}"
+        return 1
     fi
 
     local pubkey=$(echo "$api_response" | jq -r '.response.pubKey')
-    if [ -z "$pubkey" ]; then
+    if [ -z "$pubkey" ] || [ "$pubkey" == "null" ]; then
         echo -e "${COLOR_RED}${LANG[ERROR_EXTRACT_PUBLIC_KEY]}${COLOR_RESET}"
+        return 1
     fi
 
     sed -i "s|SECRET_KEY=\"PUBLIC KEY FROM REMNAWAVE-PANEL\"|SECRET_KEY=\"$pubkey\"|g" "$target_dir/docker-compose.yml"
@@ -3817,9 +3819,15 @@ create_config_profile() {
         }
     }')
 
+    if [ -z "$request_body" ]; then
+        echo "Error: jq failed to create request body" >&2
+        return 1
+    fi
+
     local response=$(make_api_request "POST" "http://$domain_url/api/config-profiles" "$token" "$request_body")
     if [ -z "$response" ] || ! echo "$response" | jq -e '.response.uuid' > /dev/null; then
         echo -e "${COLOR_RED}${LANG[ERROR_CREATE_CONFIG_PROFILE]}: $response${COLOR_RESET}" >&2
+        echo "Debug: Request body: $request_body" >&2
         return 1
     fi
 
@@ -4610,7 +4618,9 @@ EOL
     # Get public key
     echo -e "${COLOR_YELLOW}${LANG[GET_PUBLIC_KEY]}${COLOR_RESET}"
     sleep 1
-    get_public_key "$domain_url" "$token" "$target_dir"
+    if ! get_public_key "$domain_url" "$token" "$target_dir"; then
+        exit 1
+    fi
 
     # Generate Xray keys
     echo -e "${COLOR_YELLOW}${LANG[GENERATE_KEYS]}${COLOR_RESET}"
