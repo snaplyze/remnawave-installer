@@ -253,6 +253,7 @@ set_language() {
                 [ERROR_GENERATE_KEYS]="Failed to generate keys."
                 [ERROR_EMPTY_RESPONSE_NODE]="Empty response from server when creating node."
                 [ERROR_CREATE_NODE]="Failed to create node."
+                [ERROR_CREATE_CONFIG_PROFILE]="Failed to create config profile"
                 [ERROR_EMPTY_RESPONSE_HOST]="Empty response from server when creating host."
                 [ERROR_CREATE_HOST]="Failed to create host."
                 [ERROR_EMPTY_RESPONSE_REGISTER]="Registration error - empty server response"
@@ -451,7 +452,7 @@ set_language() {
                 #Check
                 [ERROR_ROOT]="Скрипт нужно запускать с правами root"
                 [ERROR_OS]="Поддержка только Debian 11/12 и Ubuntu 22.04/24.04"
-                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY Snaplyze"
+                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY by Snaplyze"
 				[AVAILABLE_UPDATE]="доступно обновление"
                 [VERSION_LABEL]="Версия: %s"
                 #Install Packages
@@ -647,6 +648,7 @@ set_language() {
                 [ERROR_DELETE_PROFILE]="Не удалось удалить профиль"
                 [ERROR_EMPTY_RESPONSE_NODE]="Пустой ответ от сервера при создании ноды."
                 [ERROR_CREATE_NODE]="Не удалось создать ноду."
+                [ERROR_CREATE_CONFIG_PROFILE]="Не удалось создать профиль конфигурации"
                 [ERROR_EMPTY_RESPONSE_HOST]="Пустой ответ от сервера при создании хоста."
                 [ERROR_CREATE_HOST]="Не удалось создать хост."
                 [ERROR_EMPTY_RESPONSE_REGISTER]="Ошибка при регистрации - пустой ответ сервера"
@@ -3817,13 +3819,15 @@ create_config_profile() {
 
     local response=$(make_api_request "POST" "http://$domain_url/api/config-profiles" "$token" "$request_body")
     if [ -z "$response" ] || ! echo "$response" | jq -e '.response.uuid' > /dev/null; then
-        echo -e "${COLOR_RED}${LANG[ERROR_CREATE_CONFIG_PROFILE]}: $response${COLOR_RESET}"
+        echo -e "${COLOR_RED}${LANG[ERROR_CREATE_CONFIG_PROFILE]}: $response${COLOR_RESET}" >&2
+        return 1
     fi
 
     local config_uuid=$(echo "$response" | jq -r '.response.uuid')
     local inbound_uuid=$(echo "$response" | jq -r '.response.inbounds[0].uuid')
     if [ -z "$config_uuid" ] || [ "$config_uuid" = "null" ] || [ -z "$inbound_uuid" ] || [ "$inbound_uuid" = "null" ]; then
-        echo -e "${COLOR_RED}${LANG[ERROR_CREATE_CONFIG_PROFILE]}: Invalid UUIDs in response: $response${COLOR_RESET}"
+        echo -e "${COLOR_RED}${LANG[ERROR_CREATE_CONFIG_PROFILE]}: Invalid UUIDs in response: $response${COLOR_RESET}" >&2
+        return 1
     fi
 
     echo "$config_uuid $inbound_uuid"
@@ -4622,8 +4626,15 @@ EOL
     reading "${LANG[ENTER_CONFIG_NAME]}" CONFIG_NAME
     if [ -z "$CONFIG_NAME" ]; then
         CONFIG_NAME="StealConfig"
+    else
+        CONFIG_NAME=$(echo "$CONFIG_NAME" | tr -dc 'a-zA-Z0-9 _-')
     fi
     read config_profile_uuid inbound_uuid <<< $(create_config_profile "$domain_url" "$token" "$CONFIG_NAME" "$SELFSTEAL_DOMAIN" "$private_key" "$CONFIG_NAME")
+    
+    if [ -z "$config_profile_uuid" ]; then
+        exit 1
+    fi
+
     echo -e "${COLOR_GREEN}${LANG[CONFIG_PROFILE_CREATED]}${COLOR_RESET}"
 
     # Create node with config profile binding
@@ -5135,8 +5146,15 @@ EOL
     reading "${LANG[ENTER_CONFIG_NAME]}" CONFIG_NAME
     if [ -z "$CONFIG_NAME" ]; then
         CONFIG_NAME="StealConfig"
+    else
+        CONFIG_NAME=$(echo "$CONFIG_NAME" | tr -dc 'a-zA-Z0-9 _-')
     fi
     read config_profile_uuid inbound_uuid <<< $(create_config_profile "$domain_url" "$token" "$CONFIG_NAME" "$SELFSTEAL_DOMAIN" "$private_key" "$CONFIG_NAME")
+    
+    if [ -z "$config_profile_uuid" ]; then
+        exit 1
+    fi
+
     echo -e "${COLOR_GREEN}${LANG[CONFIG_PROFILE_CREATED]}${COLOR_RESET}"
 
     # Create node with config profile binding
