@@ -76,7 +76,7 @@ set_language() {
                 [ERROR_INSTALL_CERTBOT]="Error: Failed to install certbot"
                 [SUCCESS_INSTALL]="All packages installed successfully"
                 #Menu
-                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY by Snaplyze"
+                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY INSTALLER by Snaplyze"
 				[AVAILABLE_UPDATE]="update available"
                 [VERSION_LABEL]="Version: %s"
                 [EXIT]="Exit"
@@ -182,7 +182,7 @@ set_language() {
                 [ENTER_PANEL_DOMAIN]="Enter panel domain (e.g. panel.example.com):"
                 [ENTER_SUB_DOMAIN]="Enter subscription domain (e.g. sub.example.com):"
                 [ENTER_NODE_DOMAIN]="Enter selfsteal domain for node (e.g. node.example.com):"
-                [ENTER_CONFIG_NAME]="Enter the name for the configuration profile (default: StealConfig):"
+                [ENTER_CONFIG_NAME]="Enter the name for the configuration profile, node and host (default: StealConfig):"
                 [ENTER_CF_TOKEN]="Enter your Cloudflare API token or global API key:"
                 [ENTER_CF_EMAIL]="Enter your Cloudflare registered email:"
                 [CHECK_CERTS]="Checking certificates..."
@@ -452,7 +452,7 @@ set_language() {
                 #Check
                 [ERROR_ROOT]="Скрипт нужно запускать с правами root"
                 [ERROR_OS]="Поддержка только Debian 11/12 и Ubuntu 22.04/24.04"
-                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY by Snaplyze"
+                [MENU_TITLE]="REMNAWAVE REVERSE-PROXY INSTALLER by Snaplyze"
 				[AVAILABLE_UPDATE]="доступно обновление"
                 [VERSION_LABEL]="Версия: %s"
                 #Install Packages
@@ -577,7 +577,7 @@ set_language() {
                 [ENTER_PANEL_DOMAIN]="Введите домен панели (например, panel.example.com):"
                 [ENTER_SUB_DOMAIN]="Введите домен подписки (например, sub.example.com):"
                 [ENTER_NODE_DOMAIN]="Введите selfsteal домен для ноды (например, node.example.com):"
-                [ENTER_CONFIG_NAME]="Введите имя для профиля конфигурации (по умолчанию: StealConfig):"
+                [ENTER_CONFIG_NAME]="Введите имя для профиля конфигурации, ноды и хоста (по умолчанию: StealConfig):"
                 [ENTER_CF_TOKEN]="Введите Cloudflare API токен или глобальный ключ:"
                 [ENTER_CF_EMAIL]="Введите зарегистрированную почту Cloudflare:"
                 [CHECK_CERTS]="Проверка сертификатов..."
